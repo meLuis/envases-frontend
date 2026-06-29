@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Core } from "cytoscape";
+import type { RefObject } from "react";
 import type { AnimTrace } from "@/lib/algorithms";
 import { nodeType, shortLabel, NODE_TYPE_COLOR as TYPE_COLOR } from "@/lib/graphData";
 
@@ -11,6 +12,7 @@ export function GraphCanvas({
   labels,
   trace,
   height = "360px",
+  staticView = false,
   onReveal,
 }: {
   nodes: string[];
@@ -18,12 +20,13 @@ export function GraphCanvas({
   labels: Map<string, string>;
   trace: AnimTrace;
   height?: string;
+  staticView?: boolean;
   onReveal?: (revealed: number, total: number, currentNodeId: string | undefined) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
-  const [revealed, setRevealed] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [revealed, setRevealed] = useState(staticView ? nodes.length : 0);
+  const [playing, setPlaying] = useState(!staticView);
   const [tip, setTip] = useState<{ x: number; y: number; label: string; type: string } | null>(null);
 
   // Mantener la última identidad de onReveal sin re-disparar el efecto de aviso.
@@ -63,9 +66,10 @@ export function GraphCanvas({
   // contador es real y la animación dura segundos, no un minuto.
   const visibleOrder = useMemo(() => {
     const set = new Set(nodes);
-    return trace.steps.filter((s) => set.has(s));
-  }, [nodes, trace.steps]);
+    return staticView ? nodes : trace.steps.filter((s) => set.has(s));
+  }, [nodes, trace.steps, staticView]);
   const total = visibleOrder.length;
+  const effectiveRevealed = staticView ? total : revealed;
 
   // Init Cytoscape (import dinámico para evitar SSR sobre window).
   useEffect(() => {
@@ -228,8 +232,8 @@ export function GraphCanvas({
   // Avisar al padre solo cuando cambia `revealed` (no cuando cambia la
   // identidad del callback — eso causaba un bucle de renders).
   useEffect(() => {
-    onRevealRef.current?.(revealed, total, visibleOrder[revealed - 1]);
-  }, [revealed, total, visibleOrder]);
+    onRevealRef.current?.(effectiveRevealed, total, visibleOrder[effectiveRevealed - 1]);
+  }, [effectiveRevealed, total, visibleOrder]);
 
   // Tick de revelado (sobre los nodos visibles → dura segundos, no un minuto).
   useEffect(() => {
@@ -242,8 +246,8 @@ export function GraphCanvas({
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
-    const shown = new Set(visibleOrder.slice(0, revealed));
-    const allPathShown = revealed >= total;
+    const shown = staticView ? new Set(nodes) : new Set(visibleOrder.slice(0, effectiveRevealed));
+    const allPathShown = !staticView && effectiveRevealed >= total;
     cy.batch(() => {
       cy.nodes().forEach((n) => {
         const id = n.id();
@@ -269,9 +273,9 @@ export function GraphCanvas({
         if (allPathShown && pathEdgeSet.has(key)) e.addClass("path");
       });
     });
-  }, [revealed, trace, pathSet, pathEdgeSet, visibleOrder, total]);
+  }, [effectiveRevealed, trace, pathSet, pathEdgeSet, visibleOrder, total, staticView, nodes]);
 
-  const done = revealed >= total;
+  const done = effectiveRevealed >= total;
 
   return (
     <div className="rounded-xl border border-border bg-[#0b1020] overflow-hidden flex flex-col">
@@ -303,52 +307,40 @@ export function GraphCanvas({
       </div>
 
       {/* Controles + métricas */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface px-4 py-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (done) setRevealed(0);
-              setPlaying((p) => !p);
-            }}
-            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-[#0b1020] hover:brightness-110"
-          >
-            {done ? "↻ Repetir" : playing ? "⏸ Pausar" : "▶ Reproducir"}
-          </button>
-          <button
-            onClick={() => setRevealed((r) => Math.min(r + 1, total))}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
-          >
-            Paso →
-          </button>
-          <div className="flex items-center gap-1 ml-2">
+      {!staticView && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface px-4 py-3 shrink-0">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => cyRef.current && cyRef.current.zoom(cyRef.current.zoom() * 1.3)}
-              className="rounded-lg border border-border px-2 py-1.5 text-sm text-muted hover:text-foreground"
-              title="Zoom in"
+              onClick={() => {
+                if (done) setRevealed(0);
+                setPlaying((p) => !p);
+              }}
+              className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-[#0b1020] hover:brightness-110"
             >
-              ＋
+              {done ? "↻ Repetir" : playing ? "⏸ Pausar" : "▶ Reproducir"}
             </button>
             <button
-              onClick={() => cyRef.current && cyRef.current.zoom(cyRef.current.zoom() * 0.75)}
-              className="rounded-lg border border-border px-2 py-1.5 text-sm text-muted hover:text-foreground"
-              title="Zoom out"
+              onClick={() => setRevealed((r) => Math.min(r + 1, total))}
+              className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
             >
-              −
+              Paso →
             </button>
-            <button
-              onClick={() => cyRef.current && cyRef.current.fit(undefined, 20)}
-              className="rounded-lg border border-border px-2 py-1.5 text-sm text-muted hover:text-foreground"
-              title="Fit to screen"
-            >
-              ⊙
-            </button>
+            <ZoomControls cyRef={cyRef} />
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <Metric label="nodos en escena" value={`${revealed}/${total}`} />
           </div>
         </div>
-
-        <div className="flex items-center gap-4 text-xs">
-          <Metric label="nodos en escena" value={`${revealed}/${total}`} />
+      )}
+      {staticView && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface px-4 py-3 shrink-0">
+          <p className="text-xs text-muted">
+            Vista fija de una muestra legible del grafo. El grafo completo está en las tablas y CSV.
+          </p>
+          <ZoomControls cyRef={cyRef} />
         </div>
-      </div>
+      )}
 
       {/* Leyenda de 2 canales: relleno = tipo de entidad · borde = estado en la búsqueda */}
       <div className="border-t border-border px-4 py-2 text-[11px] text-muted">
@@ -362,13 +354,15 @@ export function GraphCanvas({
             />
           ))}
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="text-muted/70 mr-1">borde = búsqueda:</span>
-          <Legend color="#6ea8fe" label="frente origen" ring />
-          <Legend color="#7ef0c4" label="frente destino" ring />
-          <Legend color="#ff7a8a" label="camino final" ring />
-          {trace.note && <span className="text-warn">· {trace.note}</span>}
-        </div>
+        {!staticView && (
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-muted/70 mr-1">borde = búsqueda:</span>
+            <Legend color="#6ea8fe" label="frente origen" ring />
+            <Legend color="#7ef0c4" label="frente destino" ring />
+            <Legend color="#ff7a8a" label="camino final" ring />
+            {trace.note && <span className="text-warn">· {trace.note}</span>}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -398,6 +392,34 @@ function Metric({ label, value }: { label: string; value: string | number }) {
     <div className="text-right">
       <div className="mono font-bold text-foreground">{value}</div>
       <div className="text-[10px] text-muted">{label}</div>
+    </div>
+  );
+}
+
+function ZoomControls({ cyRef }: { cyRef: RefObject<Core | null> }) {
+  return (
+    <div className="flex items-center gap-1 ml-2">
+      <button
+        onClick={() => cyRef.current && cyRef.current.zoom(cyRef.current.zoom() * 1.3)}
+        className="rounded-lg border border-border px-2 py-1.5 text-sm text-muted hover:text-foreground"
+        title="Zoom in"
+      >
+        ＋
+      </button>
+      <button
+        onClick={() => cyRef.current && cyRef.current.zoom(cyRef.current.zoom() * 0.75)}
+        className="rounded-lg border border-border px-2 py-1.5 text-sm text-muted hover:text-foreground"
+        title="Zoom out"
+      >
+        −
+      </button>
+      <button
+        onClick={() => cyRef.current && cyRef.current.fit(undefined, 20)}
+        className="rounded-lg border border-border px-2 py-1.5 text-sm text-muted hover:text-foreground"
+        title="Fit to screen"
+      >
+        ⊙
+      </button>
     </div>
   );
 }
