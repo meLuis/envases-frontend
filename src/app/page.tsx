@@ -8,19 +8,16 @@ export default function Home() {
       {/* Hero */}
       <section className="text-center max-w-3xl mx-auto">
         <p className="text-accent-2 text-sm font-medium mono">
-          CURSO · COMPLEJIDAD ALGORÍTMICA
+          CLASE INTERACTIVA · COMPLEJIDAD ALGORÍTMICA
         </p>
         <h1 className="mt-3 text-4xl sm:text-5xl font-bold tracking-tight">
-          Algoritmos sobre grafos comerciales,{" "}
-          <span className="text-accent">en vivo</span>.
+          Del CSV al grafo, del grafo al algoritmo.
         </h1>
         <p className="mt-5 text-muted text-lg leading-relaxed">
-          Sube los datos reales de una empresa de envases y mira cómo distintos
-          algoritmos —BFS, Dijkstra, Bellman-Ford, flujo de costo mínimo— recorren
-          la estructura de datos para responder preguntas del negocio. Cada tarjeta
-          muestra su <span className="text-foreground">complejidad Big-O</span>, el{" "}
-          <span className="text-foreground">baseline que pudo ser pero perdió</span>{" "}
-          y el resultado calculado por el servidor.
+          Sube datos de una empresa de envases, observa cómo se convierten en
+          grafos y ejecuta algoritmos —BFS, Dijkstra, Bellman-Ford, flujo de costo
+          mínimo— para responder preguntas reales. La app guía el razonamiento:
+          <span className="text-foreground"> mapa → pregunta → algoritmo → resultado</span>.
         </p>
         <div className="mt-8 flex items-center justify-center gap-3">
           <Link
@@ -86,21 +83,26 @@ export default function Home() {
       </section>
 
       {/* Cómo funciona */}
-      <section className="mt-16 grid gap-4 sm:grid-cols-3">
+      <section className="mt-16 grid gap-4 sm:grid-cols-4">
         <Step
           n={1}
-          title="Sube 3 archivos"
-          desc="Productos, ventas y compras. El backend limpia, normaliza y construye 5 grafos."
+          title="Sube datos"
+          desc="Productos, ventas y compras. El backend normaliza el esquema."
         />
         <Step
           n={2}
-          title="Explora la galería"
-          desc="Cada tarjeta = una pregunta del negocio resuelta por un algoritmo, con su Big-O."
+          title="Mira el mapa"
+          desc="Los CSV se convierten en grafos con nodos, aristas y pesos."
         />
         <Step
           n={3}
-          title="Ejecuta y compáralo"
-          desc="Mira el algoritmo recorrer el grafo y contrástalo con el baseline que descartamos."
+          title="Elige pregunta"
+          desc="Cada caso de negocio exige un algoritmo distinto."
+        />
+        <Step
+          n={4}
+          title="Ejecuta"
+          desc="Observa el recorrido, la complejidad y el resultado calculado."
         />
       </section>
     </div>

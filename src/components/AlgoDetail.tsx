@@ -114,27 +114,31 @@ export function AlgoDetail({
           href={`/dataset/${datasetId}`}
           className="text-sm text-muted hover:text-foreground"
         >
-          ← Galería
+          ← Preguntas guiadas
         </Link>
         <span className="ml-auto text-xs mono text-muted border border-border rounded px-2 py-1">
           grafo: {GRAPH_LABELS[card.graph]}
         </span>
       </div>
 
-      {/* Titular CS-first: algoritmo + Big-O. Negocio = subtítulo. */}
+      {/* Titular pedagógico: pregunta → grafo → algoritmo. */}
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold">
-              <span className="text-accent">◆</span> {card.investigated.name}
-            </h1>
-            <span className="mono text-sm font-bold text-accent-2 border border-accent-2/40 bg-accent-2/10 rounded-lg px-3 py-1">
+          <p className="text-xs font-medium text-accent-2 mono">PREGUNTA DEL DATASET</p>
+          <h1 className="mt-1 text-3xl font-bold">
+            <span className="text-accent">◆</span> {card.businessQuestion}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="rounded-lg border border-border bg-surface px-3 py-1.5 text-muted">
+              mapa: <span className="text-foreground mono">{GRAPH_LABELS[card.graph]}</span>
+            </span>
+            <span className="rounded-lg border border-border bg-surface px-3 py-1.5 text-muted">
+              algoritmo: <span className="text-foreground">{card.investigated.name}</span>
+            </span>
+            <span className="mono text-sm font-bold text-accent-2 border border-accent-2/40 bg-accent-2/10 rounded-lg px-3 py-1.5">
               {card.investigated.bigO}
             </span>
           </div>
-          <p className="mt-1.5 text-muted">
-            <span className="text-muted/60">Ejemplo:</span> {card.businessQuestion}
-          </p>
         </div>
 
         {/* Toggle de parámetros */}
@@ -162,7 +166,7 @@ export function AlgoDetail({
               disabled={busy}
               className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-[#0b1020] disabled:opacity-40 hover:brightness-110 transition"
             >
-              {busy ? "Ejecutando…" : "Ejecutar →"}
+              {busy ? "Ejecutando…" : "Ejecutar algoritmo →"}
             </button>
             {error && <p className="text-sm text-danger">{error}</p>}
           </div>
@@ -171,6 +175,12 @@ export function AlgoDetail({
 
       {/* GRAFO protagonista (a la izquierda) + narrador en riel derecho */}
       <section className="mt-4">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-xs font-medium text-muted mono">
+            {animatable ? "RECORRIDO SOBRE EL GRAFO" : "CÁLCULO ESTRUCTURAL"}
+          </span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
         {animatable ? (
           result?.ok ? (
             <div className="flex gap-4 items-stretch">
@@ -201,7 +211,7 @@ export function AlgoDetail({
               <p className="text-sm">
                 {busy
                   ? "Ejecutando…"
-                  : "Abre ⚙ Parámetros y ejecuta para ver el grafo animado"}
+                  : "Abre ⚙ Parámetros y ejecuta para ver cómo el algoritmo recorre el mapa"}
               </p>
             </div>
           )

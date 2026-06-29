@@ -2,17 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { artifactUrl, fetchArtifactText } from "@/lib/apiClient";
-import { buildSubgraph, revealTrace, type AnimTrace } from "@/lib/algorithms";
 import {
   GRAPH_ARTIFACTS,
-  loadGraph,
   nodeType,
   NODE_TYPE_COLOR,
-  type LoadedGraph,
 } from "@/lib/graphData";
 import { parseCSV } from "@/lib/csv";
 import type { GraphSummary } from "@/lib/types";
-import { GraphCanvas } from "./GraphCanvas";
 
 type GraphKey = "G_attr" | "G_sales" | "G_purchases" | "G_business";
 
@@ -23,9 +19,7 @@ interface GraphConfig {
   nodesMeaning: string;
   edgesMeaning: string;
   weightMeaning: string;
-  preferredSeedPrefixes: string[];
-  depth: number;
-  staticImage?: string;
+  staticImage: string;
 }
 
 const GRAPH_CONFIGS: GraphConfig[] = [
@@ -36,9 +30,7 @@ const GRAPH_CONFIGS: GraphConfig[] = [
     nodesMeaning: "PRODUCT y capas de atributos como TYPE, MATERIAL, COLOR, CAPACITY.",
     edgesMeaning: "PRODUCT → atributo extraído desde la descripción del producto.",
     weightMeaning: "Confianza del atributo extraído por reglas de dominio.",
-    preferredSeedPrefixes: ["TYPE:", "MATERIAL:", "COLOR:", "CAPACITY:"],
-    depth: 1,
-    staticImage: "g_attr_attribute_projection.png",
+    staticImage: "g_attr_full.png",
   },
   {
     key: "G_sales",
@@ -47,8 +39,7 @@ const GRAPH_CONFIGS: GraphConfig[] = [
     nodesMeaning: "CLIENT, DOCUMENT y PRODUCT.",
     edgesMeaning: "Relaciones observadas en comprobantes de venta.",
     weightMeaning: "Monto, cantidad o frecuencia disponible en el CSV de aristas.",
-    preferredSeedPrefixes: ["CLIENT:", "SALE_DOC:", "PRODUCT:"],
-    depth: 2,
+    staticImage: "g_sales_full.png",
   },
   {
     key: "G_purchases",
@@ -57,8 +48,7 @@ const GRAPH_CONFIGS: GraphConfig[] = [
     nodesMeaning: "SUPPLIER, DOCUMENT y PRODUCT.",
     edgesMeaning: "Relaciones observadas en comprobantes de compra.",
     weightMeaning: "Monto, cantidad o frecuencia disponible en el CSV de aristas.",
-    preferredSeedPrefixes: ["SUPPLIER:", "PURCHASE_DOC:", "PRODUCT:"],
-    depth: 2,
+    staticImage: "g_purchases_full.png",
   },
   {
     key: "G_business",
@@ -67,8 +57,7 @@ const GRAPH_CONFIGS: GraphConfig[] = [
     nodesMeaning: "CLIENT, SUPPLIER, DOCUMENT y PRODUCT.",
     edgesMeaning: "Relaciones combinadas de ventas y compras normalizadas.",
     weightMeaning: "Peso comercial disponible según la relación generada.",
-    preferredSeedPrefixes: ["CLIENT:", "PRODUCT:", "SUPPLIER:"],
-    depth: 2,
+    staticImage: "g_business_full.png",
   },
 ];
 
@@ -78,13 +67,6 @@ const PREVIEW_LIMIT = 80;
 interface GraphTables {
   nodes: Record<string, string>[];
   edges: Record<string, string>[];
-}
-
-interface PreviewData {
-  nodes: string[];
-  edges: [string, string][];
-  labels: Map<string, string>;
-  trace: AnimTrace;
 }
 
 export function GraphTab({
@@ -98,7 +80,6 @@ export function GraphTab({
 }) {
   const [selected, setSelected] = useState<GraphKey>("G_attr");
   const [tables, setTables] = useState<GraphTables | null>(null);
-  const [preview, setPreview] = useState<PreviewData | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -113,17 +94,14 @@ export function GraphTab({
       setLoading(true);
       setLoadError(null);
       setTables(null);
-      setPreview(null);
       try {
-        const [nodesText, edgesText, loadedGraph] = await Promise.all([
+        const [nodesText, edgesText] = await Promise.all([
           fetchArtifactText(datasetId, artifacts.nodes),
           fetchArtifactText(datasetId, artifacts.edges),
-          loadGraph(datasetId, selected),
         ]);
         if (cancelled) return;
         const nextTables = { nodes: parseCSV(nodesText), edges: parseCSV(edgesText) };
         setTables(nextTables);
-        setPreview(buildStaticPreview(loadedGraph, config));
       } catch (e) {
         if (!cancelled) setLoadError(e instanceof Error ? e.message : "No se pudo cargar el grafo");
       } finally {
@@ -135,7 +113,7 @@ export function GraphTab({
     return () => {
       cancelled = true;
     };
-  }, [artifacts.edges, artifacts.nodes, config, datasetId, selected]);
+  }, [artifacts.edges, artifacts.nodes, datasetId, selected]);
 
   const nodeTypeCounts = useMemo(
     () => countBy(tables?.nodes ?? [], (row) => row.node_type || nodeType(row.node_id || "")),
@@ -165,8 +143,8 @@ export function GraphTab({
         <h2 className="text-lg font-semibold">El grafo: el mapa del dataset</h2>
         <p className="mt-1 text-sm text-muted max-w-3xl">
           Esta pestaña muestra los grafos que ya fueron construidos al subir los CSV.
-          Aquí no se ejecutan algoritmos: la Galería usa estos mapas para hacer BFS,
-          Dijkstra, Bellman-Ford y los demás recorridos.
+          Aquí se ve la escala completa del dataset; la Galería usa estos mapas para
+          ejecutar BFS, Dijkstra, Bellman-Ford y los demás recorridos paso a paso.
         </p>
       </header>
 
@@ -198,8 +176,9 @@ export function GraphTab({
         </div>
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-        <div className="space-y-5">
+      <section className="space-y-5">
+        <div className="grid gap-5 xl:grid-cols-[minmax(320px,0.62fr)_minmax(0,1.38fr)]">
+          <div className="space-y-5">
           <div>
             <h3 className="text-lg font-semibold">{config.title}</h3>
             <p className="mt-1 text-sm text-muted">{config.purpose}</p>
@@ -208,7 +187,7 @@ export function GraphTab({
           <div className="grid gap-3 sm:grid-cols-3">
             <InfoBox label="Nodos" value={graphSummary?.nodes ?? tables?.nodes.length ?? 0} />
             <InfoBox label="Aristas" value={graphSummary?.edges ?? tables?.edges.length ?? 0} />
-            <InfoBox label="Artefactos" value="CSV" />
+            <InfoBox label="Artefactos" value="PNG + CSV" />
           </div>
 
           <div className="rounded-xl border border-border bg-surface p-4">
@@ -222,33 +201,20 @@ export function GraphTab({
 
           <Breakdown title="Tipos de nodo" counts={nodeTypeCounts} colorized />
           <Breakdown title="Tipos de arista" counts={edgeTypeCounts} />
-        </div>
+          </div>
 
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted mono">VISTA VISUAL</h3>
-          {selected === "G_attr" && config.staticImage ? (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-muted mono">VISTA VISUAL</h3>
             <GraphImage
               datasetId={datasetId}
+              title={config.title}
               imageName={config.staticImage}
-              fallback={preview}
             />
-          ) : loading ? (
-            <PreviewSkeleton />
-          ) : preview ? (
-            <GraphCanvas
-              nodes={preview.nodes}
-              edges={preview.edges}
-              labels={preview.labels}
-              trace={preview.trace}
-              height="430px"
-              staticView
-            />
-          ) : (
-            <EmptyPreview message={loadError ?? "No hay vista disponible para este grafo."} />
-          )}
-          <p className="text-xs text-muted">
-            El canvas es una muestra para lectura visual. El grafo completo se revisa en las tablas y CSV.
-          </p>
+            <p className="text-xs text-muted">
+              Esta imagen muestra el grafo completo generado por el backend desde los CSV del dataset.
+              Si se ve denso, esa densidad es parte de la evidencia de escala.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -263,7 +229,7 @@ export function GraphTab({
           <div>
             <h3 className="text-sm font-medium text-muted mono">NODOS Y ARISTAS</h3>
             <p className="mt-1 text-xs text-muted">
-              Busca una etiqueta, id, tipo o peso. Las descargas contienen el CSV completo.
+              Vista secundaria para auditoría. Busca una etiqueta, id, tipo o peso; las descargas contienen el CSV completo.
             </p>
           </div>
           <label className="block min-w-64">
@@ -298,75 +264,41 @@ export function GraphTab({
   );
 }
 
-function buildStaticPreview(graph: LoadedGraph, config: GraphConfig): PreviewData | null {
-  const seed = chooseSeed(graph, config);
-  if (!seed) return null;
-  const trace = revealTrace(graph, [seed], config.depth);
-  const sub = buildSubgraph(graph, trace.steps, [], 55, 130);
-  return {
-    ...sub,
-    labels: graph.labels,
-    trace: {
-      steps: sub.nodes,
-      side: Object.fromEntries(sub.nodes.map((node) => [node, "a"] as const)),
-      level: Object.fromEntries(sub.nodes.map((node) => [node, 0])),
-      path: [],
-      expanded: sub.nodes.length,
-    },
-  };
-}
-
-function chooseSeed(graph: LoadedGraph, config: GraphConfig): string | null {
-  const nodes = [...graph.adj.keys()];
-  for (const prefix of config.preferredSeedPrefixes) {
-    const candidates = nodes
-      .filter((id) => id.startsWith(prefix))
-      .sort((a, b) => (graph.adj.get(b)?.length ?? 0) - (graph.adj.get(a)?.length ?? 0));
-    const moderate = candidates.find((id) => {
-      const degree = graph.adj.get(id)?.length ?? 0;
-      return degree >= 3 && degree <= 30;
-    });
-    if (moderate) return moderate;
-    if (candidates[0]) return candidates[0];
-  }
-  return nodes.sort((a, b) => (graph.adj.get(b)?.length ?? 0) - (graph.adj.get(a)?.length ?? 0))[0] ?? null;
-}
-
 function GraphImage({
   datasetId,
+  title,
   imageName,
-  fallback,
 }: {
   datasetId: string;
+  title: string;
   imageName: string;
-  fallback: PreviewData | null;
 }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
-    return fallback ? (
-      <GraphCanvas
-        nodes={fallback.nodes}
-        edges={fallback.edges}
-        labels={fallback.labels}
-        trace={fallback.trace}
-        height="430px"
-        staticView
-      />
-    ) : (
-      <EmptyPreview message="El PNG estático no existe para este dataset." />
-    );
+    return <EmptyPreview message="La imagen completa no existe todavía para este dataset. Intenta recargar; si persiste, re-subir el dataset la regenerará." />;
   }
+  const href = artifactUrl(datasetId, imageName);
   return (
     <div className="rounded-xl border border-border bg-[#0b1020] overflow-hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={artifactUrl(datasetId, imageName)}
-        alt="Proyección estática de G_attr"
-        onError={() => setFailed(true)}
-        className="block h-[430px] w-full object-contain"
-      />
-      <div className="border-t border-border bg-surface px-4 py-3 text-xs text-muted">
-        PNG generado por el backend. Los valores exactos están en la tabla de aristas.
+      <a href={href} target="_blank" rel="noreferrer" title="Abrir imagen grande">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={href}
+          alt={`Visualización completa de ${title}`}
+          onError={() => setFailed(true)}
+          className="block h-[min(78vh,860px)] min-h-[560px] w-full object-contain"
+        />
+      </a>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface px-4 py-3 text-xs text-muted">
+        <span>PNG completo generado por la API. Los pesos exactos están en el CSV de aristas.</span>
+        <div className="flex gap-2">
+          <a href={href} target="_blank" rel="noreferrer" className="rounded-lg border border-border px-3 py-1.5 hover:border-accent hover:text-foreground">
+            Ver grande
+          </a>
+          <a href={href} download className="rounded-lg border border-border px-3 py-1.5 hover:border-accent hover:text-foreground">
+            Descargar PNG
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -535,14 +467,6 @@ function ReadItem({ title, body }: { title: string; body: string }) {
     <div>
       <dt className="text-xs font-semibold text-accent">{title}</dt>
       <dd className="mt-1 text-muted">{body}</dd>
-    </div>
-  );
-}
-
-function PreviewSkeleton() {
-  return (
-    <div className="grid h-[430px] place-items-center rounded-xl border border-border bg-[#0b1020] text-sm text-muted">
-      Cargando vista del grafo…
     </div>
   );
 }

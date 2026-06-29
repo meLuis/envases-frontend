@@ -82,11 +82,11 @@ export function GraphCanvas({
       const elements = [
         ...nodes.map((id) => ({
           data: { id, label: shortLabel(id, labels), color: TYPE_COLOR[nodeType(id)] ?? TYPE_COLOR.OTHER },
-          classes: "hidden",
+          classes: staticView ? "" : "hidden",
         })),
         ...edges.map(([s, t], i) => ({
           data: { id: `e${i}`, source: s, target: t },
-          classes: "hidden",
+          classes: staticView ? "" : "hidden",
         })),
       ];
       // Layout adaptativo. `cose` (dirigido por fuerzas) dispersa los nodos

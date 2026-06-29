@@ -40,10 +40,11 @@ export function ExplorerTab({ datasetId }: { datasetId: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">Explorador libre</h2>
+        <h2 className="text-lg font-semibold">Laboratorio libre</h2>
         <p className="mt-1 text-sm text-muted max-w-2xl">
-          Ejecuta cualquier algoritmo sin salir de aquí. Elige una pregunta,
-          ajusta los parámetros y compara el resultado al instante.
+          Usa esta sección después de revisar el mapa y las preguntas guiadas.
+          Aquí puedes cambiar parámetros rápidamente y comparar respuestas sin
+          salir de la misma pantalla.
         </p>
       </div>
 

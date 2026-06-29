@@ -7,7 +7,7 @@ export function MethodPanel({ card }: { card: AlgoCard }) {
       <div className="rounded-xl border border-accent-2/40 bg-accent-2/5 p-4">
         <div className="flex items-center justify-between">
           <span className="text-[10px] mono text-accent-2 border border-accent-2/40 rounded-full px-2 py-0.5">
-            AHORA · INVESTIGADO
+            ALGORITMO ELEGIDO
           </span>
           <ComplexityTag value={card.investigated.bigO} tone="good" />
         </div>
@@ -27,7 +27,7 @@ export function MethodPanel({ card }: { card: AlgoCard }) {
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center justify-between">
             <span className="text-[10px] mono text-muted border border-border rounded-full px-2 py-0.5">
-              ANTES · BASELINE
+              SOLUCIÓN INGENUA
             </span>
             <ComplexityTag value={card.baseline.bigO} tone="neutral" />
           </div>
@@ -36,7 +36,7 @@ export function MethodPanel({ card }: { card: AlgoCard }) {
             {card.baseline.idea}
           </p>
           <div className="mt-3 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2">
-            <span className="text-[10px] mono text-warn">POR QUÉ PERDIÓ</span>
+            <span className="text-[10px] mono text-warn">POR QUÉ NO BASTA</span>
             <p className="mt-1 text-sm text-foreground/90 leading-relaxed">
               {card.baseline.whyWorse}
             </p>

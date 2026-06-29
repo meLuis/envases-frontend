@@ -53,10 +53,11 @@ export default function UploadPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-12">
-      <h1 className="text-3xl font-bold">Carga de datos</h1>
+      <p className="text-xs font-medium text-accent-2 mono">PASO 1 · CONSTRUIR EL MAPA</p>
+      <h1 className="mt-1 text-3xl font-bold">Carga de datos</h1>
       <p className="mt-2 text-muted">
-        El backend limpia los archivos, infiere el esquema y construye los grafos
-        sobre los que correrán los algoritmos.
+        El backend limpia los archivos, infiere el esquema y construye los grafos.
+        Después podrás ver el mapa del dataset y ejecutar algoritmos sobre él.
       </p>
 
       {/* Subida */}
