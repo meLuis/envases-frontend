@@ -59,6 +59,7 @@ function MiniGraphPreview({ datasetId }: { datasetId: string }) {
           edges={data.edges}
           labels={data.labels}
           trace={data.trace}
+          height="420px"
         />
       )}
       <p className="mt-2 text-xs text-muted max-w-2xl">
@@ -71,20 +72,37 @@ function MiniGraphPreview({ datasetId }: { datasetId: string }) {
 }
 
 const NODE_TYPE_COLORS: Record<string, string> = {
-  PRODUCT: "var(--accent)",
-  ATTRIBUTE: "var(--accent-2)",
-  DOCUMENT: "var(--warn)",
-  CLIENT: "#c08bff",
-  SUPPLIER: "var(--danger)",
+  PRODUCT: "var(--node-product)",
+  ATTRIBUTE: "var(--node-attribute)",
+  DOCUMENT: "var(--node-document)",
+  CLIENT: "var(--node-client)",
+  SUPPLIER: "var(--node-supplier)",
+};
+
+const NODE_TYPE_MEANING: Record<string, string> = {
+  PRODUCT: "producto del catálogo",
+  ATTRIBUTE: "atributo (material, color…)",
+  DOCUMENT: "comprobante real (factura/boleta)",
+  CLIENT: "cliente que compra",
+  SUPPLIER: "proveedor que abastece",
 };
 
 export function GraphTab({
   datasetId,
   graph,
+  error,
 }: {
   datasetId: string;
   graph: GraphSummary | null;
+  error?: string | null;
 }) {
+  if (error) {
+    return (
+      <p className="text-sm text-danger border border-danger/30 bg-danger/10 rounded-lg px-3 py-2">
+        No se pudo cargar la estructura del grafo: {error}
+      </p>
+    );
+  }
   if (!graph) {
     return <p className="text-sm text-muted">Cargando estructura del grafo…</p>;
   }
@@ -159,16 +177,21 @@ export function GraphTab({
               />
             ))}
           </div>
-          {/* Leyenda */}
+          {/* Leyenda con significado de negocio */}
           <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {breakdown.map(([type, count]) => (
               <div key={type} className="flex items-center gap-2 text-sm">
                 <span
-                  className="h-3 w-3 rounded-sm"
+                  className="h-3 w-3 rounded-sm shrink-0"
                   style={{ background: NODE_TYPE_COLORS[type] ?? "var(--muted)" }}
                 />
                 <span className="font-medium">{type}</span>
-                <span className="text-muted mono ml-auto">
+                {NODE_TYPE_MEANING[type] && (
+                  <span className="text-[11px] text-muted/70">
+                    · {NODE_TYPE_MEANING[type]}
+                  </span>
+                )}
+                <span className="text-muted mono ml-auto shrink-0">
                   {count.toLocaleString()} ·{" "}
                   {((count / totalNodes) * 100).toFixed(1)}%
                 </span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Line,
   LineChart,
@@ -50,17 +51,19 @@ export function ComplexityChart({
   investigated: { label: string; bigO: string };
   baseline: { label: string; bigO: string };
 }) {
-  const kInv = classify(investigated.bigO);
-  const kBase = classify(baseline.bigO);
-
-  const data = [];
-  for (let n = 2; n <= MAX_N; n++) {
-    data.push({
-      n,
-      investigado: Math.round(fn(kInv, n) * 100) / 100,
-      baseline: Math.round(fn(kBase, n) * 100) / 100,
-    });
-  }
+  const data = useMemo(() => {
+    const kInv = classify(investigated.bigO);
+    const kBase = classify(baseline.bigO);
+    const rows = [];
+    for (let n = 2; n <= MAX_N; n++) {
+      rows.push({
+        n,
+        investigado: Math.round(fn(kInv, n) * 100) / 100,
+        baseline: Math.round(fn(kBase, n) * 100) / 100,
+      });
+    }
+    return rows;
+  }, [investigated.bigO, baseline.bigO]);
 
   return (
     <div className="rounded-xl border border-border bg-surface p-4">

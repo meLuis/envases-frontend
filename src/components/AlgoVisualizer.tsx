@@ -94,11 +94,21 @@ export function AlgoVisualizer({
   slug,
   values,
   result,
+  height,
+  onReveal,
 }: {
   datasetId: string;
   slug: string;
   values: Record<string, string>;
   result: QueryResponse;
+  height?: string;
+  onReveal?: (
+    revealed: number,
+    total: number,
+    currentNodeId: string | undefined,
+    trace: AnimTrace,
+    labels: Map<string, string>,
+  ) => void;
 }) {
   const [prepared, setPrepared] = useState<Prepared | null>(null);
   const [loading, setLoading] = useState(false);
@@ -138,12 +148,7 @@ export function AlgoVisualizer({
   if (!supported) return null;
 
   return (
-    <div className="mt-6">
-      <h3 className="font-semibold text-lg mb-1">Cómo lo recorre el algoritmo</h3>
-      <p className="text-sm text-muted mb-3">
-        Reconstrucción en el navegador sobre el grafo real. El servidor ya
-        confirmó el resultado; aquí ves el recorrido paso a paso.
-      </p>
+    <div>
       {loading && <p className="text-sm text-muted">Cargando grafo…</p>}
       {error && <p className="text-sm text-warn">{error}</p>}
       {prepared && (
@@ -153,6 +158,10 @@ export function AlgoVisualizer({
           edges={prepared.edges}
           labels={prepared.labels}
           trace={prepared.trace}
+          height={height}
+          onReveal={(revealed, total, currentNodeId) =>
+            onReveal?.(revealed, total, currentNodeId, prepared.trace, prepared.labels)
+          }
         />
       )}
     </div>

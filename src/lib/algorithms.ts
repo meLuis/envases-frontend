@@ -198,7 +198,7 @@ export function revealTrace(
   const side: Record<string, "a" | "b"> = {};
   const level: Record<string, number> = {};
   const seen = new Set<string>();
-  let frontier = seeds.filter((s) => g.adj.has(s) || true);
+  let frontier = seeds.filter((s) => g.adj.has(s));
   for (const s of seeds) {
     seen.add(s);
     side[s] = "a";

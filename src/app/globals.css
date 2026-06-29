@@ -11,6 +11,13 @@
   --accent-2: #7ef0c4;
   --warn: #ffcf6e;
   --danger: #ff7a8a;
+
+  /* Colores por tipo de nodo (relleno) — fuente única de verdad para grafos y leyendas */
+  --node-product: #6ea8fe;
+  --node-attribute: #7ef0c4;
+  --node-document: #ffcf6e;
+  --node-client: #c08bff;
+  --node-supplier: #ff7a8a;
 }
 
 @theme inline {

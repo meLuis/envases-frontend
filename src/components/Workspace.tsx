@@ -15,13 +15,18 @@ export function Workspace({ datasetId }: { datasetId: string }) {
   const [tab, setTab] = useState<Tab>("galeria");
   const [summary, setSummary] = useState<DatasetSummary | null>(null);
   const [graph, setGraph] = useState<GraphSummary | null>(null);
+  const [graphError, setGraphError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getDataset(datasetId)
       .then(setSummary)
       .catch((e) => setError(e instanceof Error ? e.message : "Error"));
-    getGraphSummary(datasetId).then(setGraph).catch(() => {});
+    getGraphSummary(datasetId)
+      .then(setGraph)
+      .catch((e) =>
+        setGraphError(e instanceof Error ? e.message : "No se pudo cargar la estructura del grafo"),
+      );
   }, [datasetId]);
 
   const groups = CATALOG.reduce<Record<string, AlgoCard[]>>((acc, c) => {
@@ -92,7 +97,9 @@ export function Workspace({ datasetId }: { datasetId: string }) {
             ))}
           </div>
         )}
-        {tab === "grafo" && <GraphTab datasetId={datasetId} graph={graph} />}
+        {tab === "grafo" && (
+          <GraphTab datasetId={datasetId} graph={graph} error={graphError} />
+        )}
         {tab === "explorador" && <ExplorerTab datasetId={datasetId} />}
       </div>
     </div>

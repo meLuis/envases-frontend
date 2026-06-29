@@ -111,3 +111,15 @@ export function nodeType(nodeId: string): string {
   if (prefix.endsWith("_DOC")) return "DOCUMENT";
   return prefix;
 }
+
+// Color por tipo de entidad. Valores hex (Cytoscape no resuelve var(--x));
+// reflejan los tokens --node-* de globals.css. Fuente única para el lienzo,
+// el riel narrador y las leyendas.
+export const NODE_TYPE_COLOR: Record<string, string> = {
+  PRODUCT: "#6ea8fe",
+  ATTRIBUTE: "#7ef0c4",
+  DOCUMENT: "#ffcf6e",
+  CLIENT: "#c08bff",
+  SUPPLIER: "#ff7a8a",
+  OTHER: "#94a3c4",
+};
