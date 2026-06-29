@@ -66,9 +66,9 @@ export const CATALOG: AlgoCard[] = [
     group: "busqueda",
     animation: "traversal",
     investigated: {
-      name: "BFS semántico sobre G_attr",
+      name: "BFS multi-semilla sobre G_attr en capas",
       bigO: "O(V + E)",
-      idea: "Desde los atributos que coinciden con la consulta (semillas), un BFS de profundidad limitada alcanza los productos: prof. 1 = atributo exacto, prof. 3 = atributo compartido. Combina con filtro AND multi-término y similitud textual.",
+      idea: "G_attr es un grafo en capas: cada dimensión del producto (tipo, material, color, capacidad, boca…) es un nodo propio. La consulta se resuelve contra esas capas (semillas), un BFS con decaimiento genera candidatos y el motor conserva solo la intersección estricta: el producto debe tocar todos los conceptos resueltos. Los atributos numéricos (100ML) son exactos: nunca aproximan a 120ML.",
     },
     baseline: {
       name: "Escaneo textual lineal",

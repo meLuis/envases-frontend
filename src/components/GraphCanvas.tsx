@@ -32,6 +32,21 @@ export function GraphCanvas({
     onRevealRef.current = onReveal;
   });
 
+  // Tipos de entidad presentes en el subgrafo (para una leyenda que se adapta
+  // a cada grafo: G_attr muestra capas; los transaccionales muestran entidades).
+  const presentTypes = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const id of nodes) {
+      const t = nodeType(id);
+      if (!seen.has(t)) {
+        seen.add(t);
+        ordered.push(t);
+      }
+    }
+    return ordered;
+  }, [nodes]);
+
   const pathSet = useMemo(() => new Set(trace.path), [trace.path]);
   const pathEdgeSet = useMemo(() => {
     const s = new Set<string>();
@@ -339,11 +354,13 @@ export function GraphCanvas({
       <div className="border-t border-border px-4 py-2 text-[11px] text-muted">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-muted/70 mr-1">relleno = entidad:</span>
-          <Legend color="#6ea8fe" label="producto" />
-          <Legend color="#7ef0c4" label="atributo" />
-          <Legend color="#ffcf6e" label="comprobante" />
-          <Legend color="#c08bff" label="cliente" />
-          <Legend color="#ff7a8a" label="proveedor" />
+          {presentTypes.map((t) => (
+            <Legend
+              key={t}
+              color={TYPE_COLOR[t] ?? TYPE_COLOR.OTHER}
+              label={TYPE_LABEL[t] ?? t.toLowerCase()}
+            />
+          ))}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-muted/70 mr-1">borde = búsqueda:</span>
@@ -356,6 +373,25 @@ export function GraphCanvas({
     </div>
   );
 }
+
+// Etiqueta legible por tipo de nodo (incluye las 9 capas de G_attr).
+const TYPE_LABEL: Record<string, string> = {
+  PRODUCT: "producto",
+  TYPE: "tipo",
+  SUBTYPE: "subtipo",
+  ACCESSORY: "accesorio",
+  SHAPE: "forma",
+  FEATURE: "cualidad",
+  MATERIAL: "material",
+  COLOR: "color",
+  CAPACITY: "capacidad",
+  MOUTH_SIZE: "boca",
+  ATTRIBUTE: "atributo",
+  DOCUMENT: "comprobante",
+  CLIENT: "cliente",
+  SUPPLIER: "proveedor",
+  OTHER: "otro",
+};
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (

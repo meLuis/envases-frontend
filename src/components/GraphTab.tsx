@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { GraphSummary } from "@/lib/types";
-import { loadGraph } from "@/lib/graphData";
+import { loadGraph, NODE_TYPE_COLOR } from "@/lib/graphData";
 import { buildSubgraph, revealTrace, type AnimTrace } from "@/lib/algorithms";
 import { GraphCanvas } from "./GraphCanvas";
 
@@ -71,16 +71,21 @@ function MiniGraphPreview({ datasetId }: { datasetId: string }) {
   );
 }
 
-const NODE_TYPE_COLORS: Record<string, string> = {
-  PRODUCT: "var(--node-product)",
-  ATTRIBUTE: "var(--node-attribute)",
-  DOCUMENT: "var(--node-document)",
-  CLIENT: "var(--node-client)",
-  SUPPLIER: "var(--node-supplier)",
-};
+// Color por tipo de nodo: fuente única compartida con el lienzo (graphData).
+const NODE_TYPE_COLORS = NODE_TYPE_COLOR;
 
 const NODE_TYPE_MEANING: Record<string, string> = {
   PRODUCT: "producto del catálogo",
+  // Capas semánticas de G_attr (dimensiones del producto)
+  TYPE: "tipo de envase (frasco, pote…)",
+  SUBTYPE: "variante comercial (airless, espumero…)",
+  ACCESSORY: "pieza incluida (tapa, brocha…)",
+  SHAPE: "forma física (ovalado, cónico…)",
+  FEATURE: "cualidad (estéril, graduado…)",
+  MATERIAL: "material (vidrio, plástico…)",
+  COLOR: "color del envase",
+  CAPACITY: "capacidad (100ML, 50GR…)",
+  MOUTH_SIZE: "boca/rosca (18MM, 28MM…)",
   ATTRIBUTE: "atributo (material, color…)",
   DOCUMENT: "comprobante real (factura/boleta)",
   CLIENT: "cliente que compra",

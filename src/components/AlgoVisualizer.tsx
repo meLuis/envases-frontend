@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { QueryResponse } from "@/lib/types";
-import { loadGraph, type LoadedGraph } from "@/lib/graphData";
+import { isAttributeNode, loadGraph, type LoadedGraph } from "@/lib/graphData";
 import {
   bidirectionalBfsTrace,
   buildSubgraph,
@@ -69,7 +69,7 @@ function prepare(
     if (terms.size === 0) return null;
     const seeds: string[] = [];
     for (const [id, label] of g.labels) {
-      if (id.startsWith("ATTR:") && terms.has(norm(label))) seeds.push(id);
+      if (isAttributeNode(id) && terms.has(norm(label))) seeds.push(id);
     }
     if (seeds.length === 0) return null;
     const keep = productIds("product_id");

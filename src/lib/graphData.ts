@@ -115,11 +115,48 @@ export function nodeType(nodeId: string): string {
 // Color por tipo de entidad. Valores hex (Cytoscape no resuelve var(--x));
 // reflejan los tokens --node-* de globals.css. Fuente única para el lienzo,
 // el riel narrador y las leyendas.
+//
+// G_attr ahora es un grafo EN CAPAS: cada dimensión del producto (TYPE, COLOR,
+// CAPACITY…) es su propio node_type con su propio color. Los hex coinciden con
+// el visualizador estático del backend para que imágenes y lienzo se lean igual.
 export const NODE_TYPE_COLOR: Record<string, string> = {
   PRODUCT: "#6ea8fe",
+  // Capas semánticas de G_attr
+  TYPE: "#3b82f6",
+  SUBTYPE: "#94a3b8",
+  ACCESSORY: "#14b8a6",
+  SHAPE: "#ec4899",
+  FEATURE: "#eab308",
+  MATERIAL: "#f97316",
+  COLOR: "#22c55e",
+  CAPACITY: "#a855f7",
+  MOUTH_SIZE: "#ef4444",
+  // Compatibilidad con datasets antiguos (nodo atributo genérico)
   ATTRIBUTE: "#7ef0c4",
+  // Grafos transaccionales
   DOCUMENT: "#ffcf6e",
   CLIENT: "#c08bff",
   SUPPLIER: "#ff7a8a",
   OTHER: "#94a3c4",
 };
+
+// Las 9 capas semánticas de G_attr (atributos de producto). Un nodo es
+// "atributo" si su node_type es una de estas capas (o el genérico ATTRIBUTE).
+export const ATTRIBUTE_LAYERS = [
+  "TYPE",
+  "SUBTYPE",
+  "ACCESSORY",
+  "SHAPE",
+  "FEATURE",
+  "MATERIAL",
+  "COLOR",
+  "CAPACITY",
+  "MOUTH_SIZE",
+] as const;
+
+const ATTRIBUTE_TYPE_SET = new Set<string>([...ATTRIBUTE_LAYERS, "ATTRIBUTE"]);
+
+/** ¿El nodo es un atributo de producto (cualquier capa de G_attr)? */
+export function isAttributeNode(nodeId: string): boolean {
+  return ATTRIBUTE_TYPE_SET.has(nodeType(nodeId));
+}
