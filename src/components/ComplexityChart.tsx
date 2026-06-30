@@ -48,12 +48,12 @@ export function ComplexityChart({
   investigated,
   baseline,
 }: {
-  investigated: { label: string; bigO: string };
-  baseline: { label: string; bigO: string };
+  investigated: { label: string; time: string };
+  baseline: { label: string; time: string };
 }) {
   const data = useMemo(() => {
-    const kInv = classify(investigated.bigO);
-    const kBase = classify(baseline.bigO);
+    const kInv = classify(investigated.time);
+    const kBase = classify(baseline.time);
     const rows = [];
     for (let n = 2; n <= MAX_N; n++) {
       rows.push({
@@ -63,7 +63,7 @@ export function ComplexityChart({
       });
     }
     return rows;
-  }, [investigated.bigO, baseline.bigO]);
+  }, [investigated.time, baseline.time]);
 
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
@@ -90,7 +90,7 @@ export function ComplexityChart({
           <Line
             type="monotone"
             dataKey="investigado"
-            name={`${investigated.label} · ${investigated.bigO}`}
+            name={`${investigated.label} · ${investigated.time}`}
             stroke="#7ef0c4"
             strokeWidth={2.5}
             dot={false}
@@ -98,7 +98,7 @@ export function ComplexityChart({
           <Line
             type="monotone"
             dataKey="baseline"
-            name={`${baseline.label} · ${baseline.bigO}`}
+            name={`${baseline.label} · ${baseline.time}`}
             stroke="#ffcf6e"
             strokeWidth={2}
             strokeDasharray="5 4"

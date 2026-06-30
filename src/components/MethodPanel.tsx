@@ -3,38 +3,29 @@ import type { AlgoCard } from "@/data/catalog";
 export function MethodPanel({ card }: { card: AlgoCard }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
-      {/* Investigado (gana) */}
+      {/* Algoritmo elegido (gana) */}
       <div className="rounded-xl border border-accent-2/40 bg-accent-2/5 p-4">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] mono text-accent-2 border border-accent-2/40 rounded-full px-2 py-0.5">
-            ALGORITMO ELEGIDO
-          </span>
-          <ComplexityTag value={card.investigated.bigO} tone="good" />
-        </div>
+        <span className="text-[10px] mono text-accent-2 border border-accent-2/40 rounded-full px-2 py-0.5">
+          ALGORITMO ELEGIDO
+        </span>
         <h4 className="mt-3 font-semibold">{card.investigated.name}</h4>
-        <p className="mt-1 text-sm text-muted leading-relaxed">
-          {card.investigated.idea}
-        </p>
-        {card.investigated.reference && (
-          <p className="mt-2 text-[11px] text-muted italic">
-            Ref: {card.investigated.reference}
-          </p>
-        )}
+        <div className="mt-2">
+          <ComplexityPair time={card.investigated.time} space={card.investigated.space} />
+        </div>
+        <p className="mt-2 text-sm text-muted leading-relaxed">{card.investigated.idea}</p>
       </div>
 
-      {/* Baseline (pudo ser pero perdió) */}
+      {/* Solución ingenua (pudo ser pero pierde) */}
       {card.baseline ? (
         <div className="rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] mono text-muted border border-border rounded-full px-2 py-0.5">
-              SOLUCIÓN INGENUA
-            </span>
-            <ComplexityTag value={card.baseline.bigO} tone="neutral" />
-          </div>
+          <span className="text-[10px] mono text-muted border border-border rounded-full px-2 py-0.5">
+            SOLUCIÓN INGENUA
+          </span>
           <h4 className="mt-3 font-semibold text-muted">{card.baseline.name}</h4>
-          <p className="mt-1 text-sm text-muted leading-relaxed">
-            {card.baseline.idea}
-          </p>
+          <div className="mt-2">
+            <ComplexityPair time={card.baseline.time} space={card.baseline.space} tone="neutral" />
+          </div>
+          <p className="mt-2 text-sm text-muted leading-relaxed">{card.baseline.idea}</p>
           <div className="mt-3 rounded-lg border border-warn/30 bg-warn/10 px-3 py-2">
             <span className="text-[10px] mono text-warn">POR QUÉ NO BASTA</span>
             <p className="mt-1 text-sm text-foreground/90 leading-relaxed">
@@ -45,8 +36,7 @@ export function MethodPanel({ card }: { card: AlgoCard }) {
       ) : (
         <div className="rounded-xl border border-dashed border-border bg-surface/30 p-4 grid place-items-center text-center">
           <p className="text-sm text-muted">
-            Sin baseline directo: este algoritmo responde una pregunta que el
-            curso no resolvía con una alternativa clásica equivalente.
+            Este algoritmo no tiene una alternativa clásica equivalente para comparar.
           </p>
         </div>
       )}
@@ -54,11 +44,31 @@ export function MethodPanel({ card }: { card: AlgoCard }) {
   );
 }
 
+/** Par de etiquetas de complejidad: tiempo + espacio. */
+export function ComplexityPair({
+  time,
+  space,
+  tone = "good",
+}: {
+  time: string;
+  space: string;
+  tone?: "good" | "neutral";
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <ComplexityTag label="tiempo" value={time} tone={tone} />
+      <ComplexityTag label="espacio" value={space} tone="neutral" />
+    </div>
+  );
+}
+
 export function ComplexityTag({
   value,
+  label,
   tone = "neutral",
 }: {
   value: string;
+  label?: string;
   tone?: "good" | "neutral" | "bad";
 }) {
   const cls =
@@ -68,7 +78,8 @@ export function ComplexityTag({
         ? "text-danger border-danger/40 bg-danger/10"
         : "text-muted border-border bg-surface-2";
   return (
-    <span className={`text-xs mono px-2 py-0.5 rounded-md border ${cls}`}>
+    <span className={`inline-flex items-center gap-1 text-xs mono px-2 py-0.5 rounded-md border ${cls}`}>
+      {label && <span className="opacity-60">{label}</span>}
       {value}
     </span>
   );

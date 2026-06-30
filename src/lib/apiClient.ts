@@ -4,7 +4,6 @@ import type {
   DatasetListItem,
   DatasetSummary,
   GraphSummary,
-  PurchaseItem,
   QueryResponse,
 } from "./types";
 
@@ -121,10 +120,6 @@ export function offersBestSavings(id: string, limit = 20) {
   return getJSON<QueryResponse>(`/datasets/${id}/offers/best-savings?limit=${limit}`);
 }
 
-export function supplierRisk(id: string) {
-  return getJSON<QueryResponse>(`/datasets/${id}/supply-chain/risk`);
-}
-
 export function crossSell(id: string, productId: string, limit = 10) {
   return getJSON<QueryResponse>(
     `/datasets/${id}/products/${productId}/cross-sell?limit=${limit}`,
@@ -142,47 +137,9 @@ export function coOccurrence(
   );
 }
 
-export function productVolatility(
-  id: string,
-  productId: string,
-  graphType: "sales" | "purchases" = "sales",
-) {
-  return getJSON<QueryResponse>(
-    `/datasets/${id}/products/${productId}/volatility?graph_type=${graphType}`,
-  );
-}
-
-export function logisticsEfficiency(
-  id: string,
-  graphType: "sales" | "purchases" = "sales",
-) {
-  return getJSON<QueryResponse>(
-    `/datasets/${id}/documents/logistics-efficiency?graph_type=${graphType}`,
-  );
-}
-
-export function bestSavingsByDocument(id: string, limit = 15) {
-  return getJSON<QueryResponse>(
-    `/datasets/${id}/supply/best-savings-by-document?limit=${limit}`,
-  );
-}
-
-export function concentrationAnalysis(
-  id: string,
-  graphType: "sales" | "purchases" = "sales",
-) {
-  return getJSON<QueryResponse>(
-    `/datasets/${id}/documents/concentration-analysis?graph_type=${graphType}`,
-  );
-}
-
 export function optimizeBudget(id: string, budget: number, items: BudgetItem[]) {
   return postJSON<QueryResponse>(`/datasets/${id}/budget/optimize`, {
     budget,
     items,
   });
-}
-
-export function optimizePurchase(id: string, items: PurchaseItem[]) {
-  return postJSON<QueryResponse>(`/datasets/${id}/purchase/optimize`, { items });
 }

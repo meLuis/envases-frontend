@@ -51,35 +51,6 @@ export function ResultView({ result }: { result: QueryResponse }) {
         </div>
       )}
 
-      {/* Métricas */}
-      {Object.keys(result.metrics).length > 0 && (
-        <div>
-          <h4 className="text-xs font-medium text-muted mono mb-2">MÉTRICAS</h4>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {Object.entries(result.metrics).map(([k, v]) => (
-              <div
-                key={k}
-                className="rounded-lg border border-border bg-surface px-3 py-2"
-              >
-                <div className="text-[11px] text-muted">{k}</div>
-                <div className="text-sm mono break-words">{formatCell(v)}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Evidencia */}
-      {Object.keys(result.evidence).length > 0 && (
-        <details className="rounded-lg border border-border bg-surface/50 px-4 py-2 text-sm">
-          <summary className="cursor-pointer text-muted">
-            Evidencia y artefactos
-          </summary>
-          <pre className="mt-2 text-[11px] mono text-muted overflow-x-auto">
-            {JSON.stringify(result.evidence, null, 2)}
-          </pre>
-        </details>
-      )}
     </div>
   );
 }

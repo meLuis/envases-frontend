@@ -40,14 +40,6 @@ export default function RootLayout({
               <Link href="/upload" className="hover:text-foreground transition">
                 Empezar
               </Link>
-              <a
-                href={`${(process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "")}/docs`}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-foreground transition"
-              >
-                API / Swagger
-              </a>
             </nav>
           </div>
         </header>

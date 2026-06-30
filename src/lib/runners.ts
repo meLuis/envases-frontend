@@ -36,28 +36,9 @@ export const RUNNERS: Record<string, Runner> = {
 
   ofertas: (id, v) => api.offersBestSavings(id, num(v.limit, 20)),
 
-  "pedido-optimo": (id, v) =>
-    api.optimizePurchase(id, [
-      { product_id: v.productId ?? "", quantity: num(v.quantity, 1000) },
-    ]),
-
-  "riesgo-proveedor": (id) => api.supplierRisk(id),
-
   "venta-cruzada": (id, v) =>
     api.crossSell(id, v.productId ?? "", num(v.limit, 10)),
 
   "co-ocurrencia": (id, v) =>
     api.coOccurrence(id, v.productId ?? "", graphType(v.graphType), num(v.limit, 15)),
-
-  volatilidad: (id, v) =>
-    api.productVolatility(id, v.productId ?? "", graphType(v.graphType)),
-
-  "eficiencia-logistica": (id, v) =>
-    api.logisticsEfficiency(id, graphType(v.graphType)),
-
-  "ahorro-por-documento": (id, v) =>
-    api.bestSavingsByDocument(id, num(v.limit, 15)),
-
-  concentracion: (id, v) =>
-    api.concentrationAnalysis(id, graphType(v.graphType)),
 };
